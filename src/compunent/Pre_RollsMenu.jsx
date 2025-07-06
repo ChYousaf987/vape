@@ -6,7 +6,7 @@ import { addToCart, fetchCart } from "../features/cart/cartSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-const EdiblesMenu = () => {
+const Pre_RollsMenu = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -21,9 +21,7 @@ const EdiblesMenu = () => {
 
   useEffect(() => {
     if (cartError) {
-      toast.error(cartError, {
-        toastId: "cart-error",
-      });
+      toast.error(cartError, { toastId: "cart-error" });
     }
   }, [cartError]);
 
@@ -42,7 +40,7 @@ const EdiblesMenu = () => {
       .unwrap()
       .then(() => {
         toast.success(`${item.product_name} added to cart!`, {
-          toastId: `cart-success-${item._id}`, // prevent duplicate
+          toastId: `cart-success-${item._id}`,
         });
         dispatch(fetchCart());
       })
@@ -56,25 +54,26 @@ const EdiblesMenu = () => {
       });
   };
 
-  const ediblesOnly = products.filter((item) =>
-    item.product_catagory?.some((cat) => cat.toLowerCase() === "disposables")
+  // ✅ Filter products from "devices" category
+  const filteredProducts = products.filter((item) =>
+    item.product_catagory?.some((cat) => cat.toLowerCase() === "devices")
   );
 
   return (
-    <div>
+    <div className="">
       {loading ? (
         <div className="text-center py-10">
           <PulseLoader size={15} color="blue" />
         </div>
       ) : error ? (
         <p className="text-center text-red-500">{error}</p>
-      ) : ediblesOnly.length === 0 ? (
+      ) : filteredProducts.length === 0 ? (
         <h2 className="text-center text-gray-700 text-2xl font-medium">
           No Products Available
         </h2>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-          {ediblesOnly.map((item) => (
+          {filteredProducts.map((item) => (
             <div
               key={item._id}
               className="relative bg-gray-100 rounded-2xl p-3 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 flex flex-col overflow-hidden"
@@ -147,4 +146,4 @@ const EdiblesMenu = () => {
   );
 };
 
-export default EdiblesMenu;
+export default Pre_RollsMenu;

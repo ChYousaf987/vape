@@ -19,10 +19,10 @@ const PromoBanner = () => {
       </video>
 
       {/* Overlay (optional dark tint) */}
-      <div className="absolute inset-0 bg-black/50 z-10"></div>
+      <div className="absolute inset-0 bg-black/50 "></div>
 
       {/* Foreground Content */}
-      <div className="relative z-20 max-w-2xl">
+      <div className="relative max-w-2xl">
         <h2 className="text-3xl sm:text-5xl font-extrabold mb-4">
           SAVE 20% ON YOUR FIRST ORDER!
         </h2>

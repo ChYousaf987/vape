@@ -1,86 +1,84 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { PulseLoader } from "react-spinners";
-
-const dummyProducts = [
-  {
-    _id: "1",
-    product_name: "Margherita Pizza",
-    product_description: "Classic delight with 100% real mozzarella cheese",
-    product_price: 500,
-    product_images: [
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMm1t9LBc23SogzzNqPTY8mr7y3xt-GXoloA&s",
-    ],
-    rating: 4.5,
-  },
-  {
-    _id: "2",
-    product_name: "Pepperoni Pizza",
-    product_description: "Loaded with pepperoni and cheese",
-    product_price: 700,
-    product_images: [
-      "https://i0.wp.com/images-prod.healthline.com/hlcmsresource/images/AN_images/eating-weed-1296x728-feature.jpg?w=1155&h=1528",
-    ],
-    rating: 4.8,
-  },
-  {
-    _id: "3",
-    product_name: "Veggie Supreme",
-    product_description: "Topped with fresh veggies and cheese",
-    product_price: 650,
-    product_images: [
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOMhOxHMQ-6RTPAmjpCRMuLHPieD6tiKGX6A&s",
-    ],
-    rating: 4.2,
-  },
-  {
-    _id: "4",
-    product_name: "Veggie Supreme",
-    product_description: "Topped with fresh veggies and cheese",
-    product_price: 650,
-    product_images: [
-      "https://mooselabs.us/cdn/shop/articles/Smoking_Vs_Edibles.jpg?v=1649737746",
-    ],
-    rating: 4.3,
-  },
-  {
-    _id: "5",
-    product_name: "Veggie Supreme",
-    product_description: "Topped with fresh veggies and cheese",
-    product_price: 650,
-    product_images: [
-      "https://media.self.com/photos/60a67773179a492b4b0c738c/4:3/w_2560%2Cc_limit/AdobeStock_279478727.jpeg",
-    ],
-    rating: 4.0,
-  },
-];
+import { fetchProducts } from "../features/products/productSlice";
+import { addToCart, fetchCart } from "../features/cart/cartSlice";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const EdiblesMenu = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { products, loading, error } = useSelector((state) => state.products);
+  const { user } = useSelector((state) => state.auth);
+  const { error: cartError } = useSelector((state) => state.cart);
   const [loadingItems, setLoadingItems] = useState({});
 
-  const handleAddToCart = (id) => {
-    setLoadingItems((prev) => ({ ...prev, [id]: true }));
-    setTimeout(() => {
-      setLoadingItems((prev) => ({ ...prev, [id]: false }));
-      alert("Added to cart!");
-    }, 1000);
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (cartError) {
+      toast.error(cartError, {
+        toastId: "cart-error",
+      });
+    }
+  }, [cartError]);
+
+  const handleAddToCart = (item) => {
+    if (!user) {
+      toast.warn("Please log in to add items to cart", {
+        toastId: "login-warning",
+      });
+      navigate("/login");
+      return;
+    }
+
+    setLoadingItems((prev) => ({ ...prev, [item._id]: true }));
+
+    dispatch(addToCart(item))
+      .unwrap()
+      .then(() => {
+        toast.success(`${item.product_name} added to cart!`, {
+          toastId: `cart-success-${item._id}`, // prevent duplicate
+        });
+        dispatch(fetchCart());
+      })
+      .catch((err) => {
+        toast.error(err || "Failed to add to cart", {
+          toastId: `cart-fail-${item._id}`,
+        });
+      })
+      .finally(() => {
+        setLoadingItems((prev) => ({ ...prev, [item._id]: false }));
+      });
   };
 
+  const ediblesOnly = products.filter((item) =>
+    item.product_catagory?.some((cat) => cat.toLowerCase() === "kratom")
+  );
+
   return (
-    <div className="">
-      {dummyProducts.length === 0 ? (
-        <h2 className="text-center text-gray-300 text-2xl font-medium">
+    <div>
+      {loading ? (
+        <div className="text-center py-10">
+          <PulseLoader size={15} color="blue" />
+        </div>
+      ) : error ? (
+        <p className="text-center text-red-500">{error}</p>
+      ) : ediblesOnly.length === 0 ? (
+        <h2 className="text-center text-gray-700 text-2xl font-medium">
           No Products Available
         </h2>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-          {dummyProducts.map((item) => (
+          {ediblesOnly.map((item) => (
             <div
               key={item._id}
-              className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-2xl p-3 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 flex flex-col overflow-hidden"
+              className="relative bg-gray-100 rounded-2xl p-3 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 flex flex-col overflow-hidden"
             >
-              {/* Subtle Glow Effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-
               <img
                 src={item.product_images[0]}
                 alt={item.product_name}
@@ -89,10 +87,10 @@ const EdiblesMenu = () => {
               />
               <div className="flex-grow flex flex-col justify-between z-10">
                 <div>
-                  <h6 className="font-semibold text-2xl text-white mb-3 tracking-tight">
+                  <h6 className="font-semibold text-2xl text-gray-700 mb-3 tracking-tight">
                     {item.product_name}
                   </h6>
-                  <p className="text-base text-gray-200 leading-relaxed">
+                  <p className="text-base text-gray-700 leading-relaxed">
                     {item.product_description}
                   </p>
                   <div className="flex gap-1 text-yellow-400 mt-2 mb-3">
@@ -100,10 +98,10 @@ const EdiblesMenu = () => {
                       <svg
                         key={i}
                         className={`w-5 h-5 ${
-                          i < Math.floor(item.rating)
+                          i < Math.floor(item.rating || 4)
                             ? "fill-current"
-                            : i < Math.ceil(item.rating) &&
-                              item.rating % 1 >= 0.5
+                            : i < Math.ceil(item.rating || 4) &&
+                              (item.rating || 4) % 1 >= 0.5
                             ? "fill-current text-yellow-400/50"
                             : "fill-none stroke-current"
                         }`}
@@ -112,22 +110,22 @@ const EdiblesMenu = () => {
                         <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                       </svg>
                     ))}
-                    <span className="text-gray-200 text-sm ml-2">
-                      ({item.rating})
+                    <span className="text-gray-700 text-sm ml-2">
+                      ({item.rating || 4})
                     </span>
                   </div>
-                  <span className="text-orange-400 font-bold text-xl">
-                    Rs. {item.product_price}
+                  <span className="text-blue-400 font-bold text-xl">
+                    Rs. {item.product_discounted_price}
                   </span>
                 </div>
                 <div className="flex flex-col items-center justify-between">
                   <button
-                    onClick={() => handleAddToCart(item._id)}
+                    onClick={() => handleAddToCart(item)}
                     disabled={loadingItems[item._id]}
                     className={`relative text-white rounded-xl px-8 py-2 mt-3 font-semibold transition-all duration-300 w-36 text-center overflow-hidden ${
                       loadingItems[item._id]
                         ? "bg-gray-600 cursor-not-allowed"
-                        : "bg-amber-500 hover:bg-amber-600 hover:scale-110"
+                        : "bg-blue-500 hover:bg-blue-600 hover:scale-110"
                     }`}
                   >
                     {loadingItems[item._id] ? (

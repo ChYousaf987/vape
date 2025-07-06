@@ -21,9 +21,7 @@ const EdiblesMenu = () => {
 
   useEffect(() => {
     if (cartError) {
-      toast.error(cartError, {
-        toastId: "cart-error",
-      });
+      toast.error(cartError, { toastId: "cart-error" });
     }
   }, [cartError]);
 
@@ -42,7 +40,7 @@ const EdiblesMenu = () => {
       .unwrap()
       .then(() => {
         toast.success(`${item.product_name} added to cart!`, {
-          toastId: `cart-success-${item._id}`, // prevent duplicate
+          toastId: `cart-success-${item._id}`,
         });
         dispatch(fetchCart());
       })
@@ -56,12 +54,13 @@ const EdiblesMenu = () => {
       });
   };
 
+  // ✅ Filter only Whip-gas category products
   const ediblesOnly = products.filter((item) =>
-    item.product_catagory?.some((cat) => cat.toLowerCase() === "disposables")
+    item.product_catagory?.includes("Whip-gas")
   );
 
   return (
-    <div>
+    <div className="">
       {loading ? (
         <div className="text-center py-10">
           <PulseLoader size={15} color="blue" />
@@ -93,30 +92,9 @@ const EdiblesMenu = () => {
                   <p className="text-base text-gray-700 leading-relaxed">
                     {item.product_description}
                   </p>
-                  <div className="flex gap-1 text-yellow-400 mt-2 mb-3">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`w-5 h-5 ${
-                          i < Math.floor(item.rating || 4)
-                            ? "fill-current"
-                            : i < Math.ceil(item.rating || 4) &&
-                              (item.rating || 4) % 1 >= 0.5
-                            ? "fill-current text-yellow-400/50"
-                            : "fill-none stroke-current"
-                        }`}
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                      </svg>
-                    ))}
-                    <span className="text-gray-700 text-sm ml-2">
-                      ({item.rating || 4})
-                    </span>
-                  </div>
-                  <span className="text-blue-400 font-bold text-xl">
+                  <div className="text-blue-600 font-bold text-xl mt-3">
                     Rs. {item.product_discounted_price}
-                  </span>
+                  </div>
                 </div>
                 <div className="flex flex-col items-center justify-between">
                   <button

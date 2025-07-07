@@ -8,7 +8,9 @@ const AutoPlaySlider = () => {
   const { products, loading } = useSelector((state) => state.products);
 
   useEffect(() => {
-    dispatch(fetchProducts());
+    dispatch(fetchProducts()).then((result) => {
+      console.log("Fetched products:", result.payload); // Debug API response
+    });
   }, [dispatch]);
 
   const eliquidProducts = products.filter((item) =>
@@ -44,7 +46,10 @@ const AutoPlaySlider = () => {
 
                 <div className="p-4 h-48 flex items-center justify-center bg-gray-50">
                   <img
-                    src={product.product_images[0]}
+                    src={
+                      product.product_images[0] ||
+                      "https://via.placeholder.com/150"
+                    }
                     alt={product.product_name}
                     className="object-contain max-h-full transition-transform duration-300 group-hover:scale-105"
                   />
@@ -56,15 +61,19 @@ const AutoPlaySlider = () => {
                   </h3>
                   <div className="flex items-center gap-2 text-sm">
                     <span className="line-through text-gray-400">
-                      Rs. {product.product_price}
+                      Rs. {product.product_base_price || "N/A"}
                     </span>
                     <span className="font-semibold text-black">
-                      Rs. {product.product_discounted_price}
+                      Rs. {product.product_discounted_price || "N/A"}
                     </span>
                   </div>
                   <p className="text-green-600 text-xs mt-1">
                     Save - Rs.{" "}
-                    {product.product_price - product.product_discounted_price}
+                    {product.product_base_price &&
+                    product.product_discounted_price
+                      ? product.product_base_price -
+                        product.product_discounted_price
+                      : "N/A"}
                   </p>
                 </div>
               </div>

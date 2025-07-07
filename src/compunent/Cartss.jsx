@@ -73,7 +73,7 @@ const Cardss = () => {
   const handlePayment = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3003/api/payment/checkout",
+        "http://213.199.41.219:3003/api/payment/checkout",
         {
           products: cart,
         },
@@ -229,12 +229,12 @@ const Cardss = () => {
               >
                 CONTINUE TO CHECKOUT
               </button>
-              <button
+              {/* <button
                 onClick={() => alert("Chat functionality not implemented yet")}
                 className="w-full mt-2 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold"
               >
                 CHAT WITH SELLER
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
